@@ -113,7 +113,16 @@ public class FtcDecodeOpMode extends OpMode {
 
         //double servoLPos
 
-        // This is the movement code for 4 wheel full movement.
+        // This is the movement code for 4 wheel full movement. Strafe Specifically.
+        /*frMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
+        flMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
+        brMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
+        blMotorPower = ((forwardPower - G1LeftStickX) + (G1RightStickX));
+
+        flMotor.setPower(-flMotorPower);
+        frMotor.setPower(frMotorPower);
+        blMotor.setPower(-blMotorPower);
+        brMotor.setPower(brMotorPower);*/
 
 
         if (G1yButton){
@@ -125,33 +134,20 @@ public class FtcDecodeOpMode extends OpMode {
         }
 
         if (Inverse){
-            /*frMotorPower = forwardPower + G1LeftStickX;
+            frMotorPower = forwardPower + G1LeftStickX;
             flMotorPower = forwardPower - G1LeftStickX;
             frMotor.setPower(-frMotorPower);
-            flMotor.setPower(flMotorPower);*/
-            frMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
-            flMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
-            brMotorPower = ((forwardPower - G1LeftStickX) + (G1RightStickX));
-            blMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
-
             flMotor.setPower(flMotorPower);
-            frMotor.setPower(-frMotorPower);
-            blMotor.setPower(blMotorPower);
-            brMotor.setPower(-brMotorPower);
+            brMotor.setPower(frMotorPower);
+            blMotor.setPower(-flMotorPower);
         } else {
-            /*frMotorPower = forwardPower - G1LeftStickX;
+            frMotorPower = forwardPower - G1LeftStickX;
             flMotorPower = forwardPower + G1LeftStickX;
             frMotor.setPower(frMotorPower);
-            flMotor.setPower(-flMotorPower);*/
-            frMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
-            flMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
-            brMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
-            blMotorPower = ((forwardPower - G1LeftStickX) + (G1RightStickX));
-
             flMotor.setPower(-flMotorPower);
-            frMotor.setPower(frMotorPower);
-            blMotor.setPower(-blMotorPower);
-            brMotor.setPower(brMotorPower);
+            brMotor.setPower(-frMotorPower);
+            blMotor.setPower(flMotorPower);
+
         }
 
         // Gamepad 2
@@ -209,7 +205,7 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("Launch Wheels Together: ", Together);
         telemetry.addData("Intake Wheels Reverse: ", Reverse);
 
-        }
+    }
 
 }
 
