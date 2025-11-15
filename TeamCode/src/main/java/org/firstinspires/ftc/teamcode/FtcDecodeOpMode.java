@@ -23,7 +23,7 @@ public class FtcDecodeOpMode extends OpMode {
     private DcMotor spinMotor;
     private CRServo rightSpin;
     private CRServo leftSpin;
-    private CRServo intakeSpin;
+    private DcMotor intakeSpin;
     private boolean Manual = true; // Player can switch between manual controls and preset actions.
     private boolean Inverse = false;
     private boolean Together = false;
@@ -146,15 +146,15 @@ public class FtcDecodeOpMode extends OpMode {
             flMotorPower = forwardPower - G1LeftStickX;
             frMotor.setPower(-frMotorPower);
             flMotor.setPower(flMotorPower);
-            brMotor.setPower(frMotorPower);
-            blMotor.setPower(-flMotorPower);
+            brMotor.setPower(-frMotorPower);
+            blMotor.setPower(flMotorPower);
         } else {
             frMotorPower = forwardPower - G1LeftStickX;
             flMotorPower = forwardPower + G1LeftStickX;
             frMotor.setPower(frMotorPower);
             flMotor.setPower(-flMotorPower);
-            brMotor.setPower(-frMotorPower);
-            blMotor.setPower(flMotorPower);
+            brMotor.setPower(frMotorPower);
+            blMotor.setPower(-flMotorPower);
 
         }
 

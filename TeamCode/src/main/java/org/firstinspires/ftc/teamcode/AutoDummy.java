@@ -22,7 +22,7 @@ public class AutoDummy extends LinearOpMode {
     private DcMotor spinMotor;
     private CRServo rightSpin;
     private CRServo leftSpin;
-    private CRServo intakeSpin;
+    private DcMotor intakeSpin;
     private boolean Manual = true; // Player can switch between manual controls and preset actions.
     private boolean Inverse = false;
     private boolean Together = false;
@@ -30,28 +30,28 @@ public class AutoDummy extends LinearOpMode {
 
     private RobotHardware robot = new RobotHardware(); // Class with all of the robot's hardware.
 
-    @Override
-    public void init() {
-        robot.init(hardwareMap);
-
-        flMotor = robot.FLMotor;
-        frMotor = robot.FRMotor;
-        blMotor = robot.BLMotor;
-        brMotor = robot.BRMotor;
-        spinMotor = robot.SpinMotor;
-        rightSpin = robot.rightSpin;
-        leftSpin = robot.leftSpin;
-        intakeSpin = robot.intakeSpin;
-
-        telemetry.addData("Status", "Initialized");
-        telemetry.update();
-
-        APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
-        AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
-        telemetry.addData("Detected Tag Id:", detection.id);
-        telemetry.update();
-
-    }
+//    @Override
+//    public void init() {
+//        robot.init(hardwareMap);
+//
+//        flMotor = robot.FLMotor;
+//        frMotor = robot.FRMotor;
+//        blMotor = robot.BLMotor;
+//        brMotor = robot.BRMotor;
+//        spinMotor = robot.SpinMotor;
+//        rightSpin = robot.rightSpin;
+//        leftSpin = robot.leftSpin;
+//        intakeSpin = robot.intakeSpin;
+//
+//        telemetry.addData("Status", "Initialized");
+//        telemetry.update();
+//
+//        APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
+//        AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
+//        telemetry.addData("Detected Tag Id:", detection.id);
+//        telemetry.update();
+//
+//    }
     /*
      * This code runs REPEATEDLY after the driver hits START but before they hit STOP.
      */

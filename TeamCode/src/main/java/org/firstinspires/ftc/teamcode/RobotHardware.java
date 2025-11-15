@@ -14,7 +14,7 @@ public class RobotHardware {
     public DcMotor SpinMotor;
     public CRServo rightSpin;
     public CRServo leftSpin;
-    public CRServo intakeSpin;
+    public DcMotor intakeSpin;
 
     //This is the onboard imu located on the controller hub
     public IMU imu;
@@ -29,7 +29,7 @@ public class RobotHardware {
         SpinMotor = hardwareMap.get(DcMotor.class, "SpinMotor");
         rightSpin = hardwareMap.get(CRServo.class, "RS");
         leftSpin = hardwareMap.get(CRServo.class, "LS");
-        intakeSpin = hardwareMap.get(CRServo.class, "IS");
+        intakeSpin = hardwareMap.get(DcMotor.class, "IS");
 
         FLMotor.setPower(0.0);
         BLMotor.setPower(0.0);
@@ -45,12 +45,14 @@ public class RobotHardware {
         BRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
         FRMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
         SpinMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
+        intakeSpin.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
 
         FLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BLMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         FRMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         SpinMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+        intakeSpin.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
     }
 }
