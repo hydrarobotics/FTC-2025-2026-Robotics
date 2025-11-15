@@ -51,10 +51,11 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("Y Button: ", "Inverts movement");
         telemetry.addData("X Button: ", "Resets movement");
         telemetry.addData("//---------------| ", "Driver 2 Controls");
-        telemetry.addData("Right Trigger: ", "Launch Wheel");
+        telemetry.addData("Right Trigger: ", "Reduces Launch Speed");
         telemetry.addData("Left Trigger: ", "Intake Wheels");
         telemetry.addData("Left Stick Y: ", "Servo Wheels");
         telemetry.addData("X Button: ", "Drops Ball Bar");
+        telemetry.addData("Y Button: ", "Activates Launcher");
         telemetry.addData("B Button: ", "Reverses intake direction");
         telemetry.addData("A Button: ", "Resets intake direction");
         telemetry.update();
@@ -135,6 +136,7 @@ public class FtcDecodeOpMode extends OpMode {
         double spinMotorPower = 0.0;
         double servoSpinPower = 0.0;
         double intakeSpinPower = 0.0;
+        boolean wheelActivate = false;
 
         //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
@@ -184,6 +186,10 @@ public class FtcDecodeOpMode extends OpMode {
             leftSpin.setPosition(0.0);
         }
 
+        if(G2yButton){
+            wheelActivate = true;
+        }
+
         if (G2bButton){
             Reverse = true;
         }
@@ -195,8 +201,10 @@ public class FtcDecodeOpMode extends OpMode {
         servoSpinPower = G2LeftStickY;
         intakeSpinPower = G2leftTrigger / 2; //Too strong at max.
 
+        if (wheelActivate) {
+            spinMotor.setPower(1.0 - spinMotorPower);
+        }
 
-        spinMotor.setPower(spinMotorPower);
         rightSpin.setPower(-servoSpinPower);
 
         if (!Reverse) {
