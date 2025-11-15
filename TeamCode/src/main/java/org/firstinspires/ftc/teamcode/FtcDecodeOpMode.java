@@ -22,14 +22,13 @@ public class FtcDecodeOpMode extends OpMode {
     private DcMotor brMotor;
     private DcMotor spinMotor;
     private CRServo rightSpin;
-    private CRServo leftSpin;
-    private CRServo intakeSpin;
-    private boolean Manual = true; // Player can switch between manual controls and preset actions.
-    private boolean Inverse = false;
-    private boolean Together = false;
-    private boolean Reverse = false;
+    private Servo leftSpin;
+    private DcMotor intakeSpin;
+    private boolean Manual = true; //Player can switch between manual controls and preset actions. Unused atm.
+    private boolean Inverse = false; //Inverts movement.
+    private boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
 
-    private RobotHardware robot = new RobotHardware(); // Class with all of the robot's hardware.
+    private RobotHardware robot = new RobotHardware(); //Initializes the RobotHardware class to get its data.
 
     @Override
     public void init() {
@@ -45,8 +44,22 @@ public class FtcDecodeOpMode extends OpMode {
         intakeSpin = robot.intakeSpin;
 
         telemetry.addData("Status", "Initialized");
+        telemetry.addData("//---------------| ", "Driver 1 Controls");
+        telemetry.addData("Right Trigger: ", "Forward");
+        telemetry.addData("Left Trigger: ", "Backward");
+        telemetry.addData("Left Stick Horizontal: ", "Turning");
+        telemetry.addData("Y Button: ", "Inverts movement");
+        telemetry.addData("X Button: ", "Resets movement");
+        telemetry.addData("//---------------| ", "Driver 2 Controls");
+        telemetry.addData("Right Trigger: ", "Launch Wheel");
+        telemetry.addData("Left Trigger: ", "Intake Wheels");
+        telemetry.addData("Left Stick Y: ", "Servo Wheels");
+        telemetry.addData("X Button: ", "Drops Ball Bar");
+        telemetry.addData("B Button: ", "Reverses intake direction");
+        telemetry.addData("A Button: ", "Resets intake direction");
         telemetry.update();
 
+        //Nayana Code
         APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
         AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
         telemetry.addData("Detected Tag Id:", detection.id);
@@ -57,7 +70,8 @@ public class FtcDecodeOpMode extends OpMode {
     @Override
     public void loop() {
 
-        //Driver #1 Gamepad Controls
+        //----------------------------------------------------------------------------------| Driver #1 Gamepad Controls
+
         //Buttons
         boolean G1xButton = gamepad1.x;
         boolean G1aButton = gamepad1.a;
@@ -79,7 +93,8 @@ public class FtcDecodeOpMode extends OpMode {
         boolean G1LeftBumper = gamepad1.left_bumper;
         boolean G1RightBumper = gamepad1.right_bumper;
 
-        //Driver #2 Gamepad Controls
+        //----------------------------------------------------------------------------------| Driver #2 Gamepad Controls
+
         //Buttons
         boolean G2xButton = gamepad2.x;
         boolean G2aButton = gamepad2.a;
@@ -107,21 +122,24 @@ public class FtcDecodeOpMode extends OpMode {
         boolean G2DpadDown = gamepad2.dpad_down;
         boolean G2DpadLeft = gamepad2.dpad_left;
 
-        // Player 1 Variables
+        //----------------------------------------------------------------------------------| Player 1 Variables
+
         double flMotorPower = 0.0;
         double frMotorPower = 0.0;
         double blMotorPower = 0.0;
         double brMotorPower = 0.0;
         double forwardPower = (G1rightTrigger - G1leftTrigger);
 
-        // Player 2 Variables
+        //----------------------------------------------------------------------------------| Player 2 Variables
+
         double spinMotorPower = 0.0;
         double servoSpinPower = 0.0;
         double intakeSpinPower = 0.0;
 
-        //double servoLPos
+        //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
-        // This is the movement code for 4 wheel full movement. Strafe Specifically.
+        /* This is the movement code for 4 wheel full movement. Strafe Specifically. Will be added when we
+        implement mechanum wheels. */
         /*frMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
         flMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
         brMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
@@ -146,26 +164,26 @@ public class FtcDecodeOpMode extends OpMode {
             flMotorPower = forwardPower - G1LeftStickX;
             frMotor.setPower(-frMotorPower);
             flMotor.setPower(flMotorPower);
-            brMotor.setPower(frMotorPower);
-            blMotor.setPower(-flMotorPower);
+            brMotor.setPower(-frMotorPower);
+            blMotor.setPower(flMotorPower);
         } else {
             frMotorPower = forwardPower - G1LeftStickX;
             flMotorPower = forwardPower + G1LeftStickX;
             frMotor.setPower(frMotorPower);
             flMotor.setPower(-flMotorPower);
-            brMotor.setPower(-frMotorPower);
-            blMotor.setPower(flMotorPower);
+            brMotor.setPower(frMotorPower);
+            blMotor.setPower(-flMotorPower);
 
         }
 
-        // Gamepad 2
+        //----------------------------------------------------------------------------------| Gamepad 2 Controls
 
-        if (G2yButton){
-            Together = true;
-        }
         if (G2xButton){
-            Together = false;
+            leftSpin.setPosition(0.25);
+        } else {
+            leftSpin.setPosition(0.0);
         }
+
         if (G2bButton){
             Reverse = true;
         }
@@ -175,17 +193,11 @@ public class FtcDecodeOpMode extends OpMode {
 
         spinMotorPower = G2rightTrigger;
         servoSpinPower = G2LeftStickY;
-        intakeSpinPower = G2leftTrigger;
+        intakeSpinPower = G2leftTrigger / 2; //Too strong at max.
 
-        if (Together){
-            spinMotor.setPower(spinMotorPower);
-            rightSpin.setPower(-spinMotorPower);
-            leftSpin.setPower(spinMotorPower);
-        } else {
-            spinMotor.setPower(spinMotorPower);
-            rightSpin.setPower(-servoSpinPower);
-            leftSpin.setPower(servoSpinPower);
-        }
+
+        spinMotor.setPower(spinMotorPower);
+        rightSpin.setPower(-servoSpinPower);
 
         if (!Reverse) {
             intakeSpin.setPower(intakeSpinPower);
@@ -193,7 +205,7 @@ public class FtcDecodeOpMode extends OpMode {
             intakeSpin.setPower(-intakeSpinPower);
         }
 
-        // Telemetry
+        //----------------------------------------------------------------------------------| Telemetry
 
         telemetry.addData("Front Right Wheel Power: ", frMotorPower);
         telemetry.addData("Front Left Wheel Power: ", flMotorPower);
@@ -206,11 +218,10 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("Front Left Wheel Cur Power: ", flMotor.getPower());
         telemetry.addData("Launch Wheel Cur Power: ", spinMotor.getPower());
         telemetry.addData("Launch Servo Right Cur Power: ", rightSpin.getPower());
-        telemetry.addData("Launch Servo Left Cur Power: ", leftSpin.getPower());
+        telemetry.addData("Launch Servo Left Cur Pos: ", leftSpin.getPosition());
         telemetry.addData("Intake Servo Cur Power: ", intakeSpin.getPower());
         telemetry.addData("|-----------------------|","");
         telemetry.addData("Movement Controls Inverse On: ", Inverse);
-        telemetry.addData("Launch Wheels Together: ", Together);
         telemetry.addData("Intake Wheels Reverse: ", Reverse);
 
     }
