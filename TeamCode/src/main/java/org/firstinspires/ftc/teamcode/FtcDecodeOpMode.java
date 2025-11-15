@@ -24,9 +24,6 @@ public class FtcDecodeOpMode extends OpMode {
     private CRServo rightSpin;
     private Servo leftSpin;
     private DcMotor intakeSpin;
-    private boolean Manual = true; //Player can switch between manual controls and preset actions. Unused atm.
-    private boolean Inverse = false; //Inverts movement.
-    private boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
 
     private RobotHardware robot = new RobotHardware(); //Initializes the RobotHardware class to get its data.
 
@@ -61,10 +58,10 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.update();
 
         //Nayana Code
-        APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
-        AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
-        telemetry.addData("Detected Tag Id:", detection.id);
-        telemetry.update();
+        //APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
+        //AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
+        //telemetry.addData("Detected Tag Id:", detection.id);
+        //telemetry.update();
 
     }
 
@@ -130,6 +127,9 @@ public class FtcDecodeOpMode extends OpMode {
         double blMotorPower = 0.0;
         double brMotorPower = 0.0;
         double forwardPower = (G1rightTrigger - G1leftTrigger);
+        boolean Inverse = false; //Inverts movement.
+        boolean aHold = false;
+        boolean aRelease = true;
 
         //----------------------------------------------------------------------------------| Player 2 Variables
 
@@ -137,6 +137,7 @@ public class FtcDecodeOpMode extends OpMode {
         double servoSpinPower = 0.0;
         double intakeSpinPower = 0.0;
         boolean wheelActivate = false;
+        boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
 
         //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
@@ -160,6 +161,17 @@ public class FtcDecodeOpMode extends OpMode {
         if (G1xButton){
             Inverse = false;
         }
+
+        /*if(G1aButton){
+            aRelease = false;
+            if(aHold){
+                Inverse = true;
+            } else {
+                Inverse = false;
+            }
+        } else {
+
+        }*/ //Currently working on code
 
         if (Inverse){
             frMotorPower = forwardPower + G1LeftStickX;

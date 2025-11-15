@@ -40,6 +40,7 @@ public class RobotHardware {
         SpinMotor.setPower(0.0);
         rightSpin.setPower(0.0);
         intakeSpin.setPower(0.0);
+        leftSpin.setPosition(0.0);
 
         //Since the motors don't need to have their positions tracked, they don't use encoders.
         FLMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
