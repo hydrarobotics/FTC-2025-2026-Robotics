@@ -8,8 +8,11 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 import com.qualcomm.robotcore.util.ElapsedTime;
 
+import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
+
 @TeleOp
 public class FtcDecodeOpMode extends OpMode {
+
 
     // Declare OpMode members for each of the 4 motors.
     private ElapsedTime runtime = new ElapsedTime();
@@ -42,6 +45,11 @@ public class FtcDecodeOpMode extends OpMode {
         intakeSpin = robot.intakeSpin;
 
         telemetry.addData("Status", "Initialized");
+        telemetry.update();
+
+        APrilTagWebcam aprilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
+        AprilTagDetection detection = aprilTagWebcam.getTagBySpecificId(21);
+        telemetry.addData("Detected Tag Id:", detection.id);
         telemetry.update();
 
     }
