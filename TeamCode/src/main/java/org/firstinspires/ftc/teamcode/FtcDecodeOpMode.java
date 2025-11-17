@@ -47,6 +47,7 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("Left Stick Horizontal: ", "Turning");
         telemetry.addData("Y Button: ", "Inverts movement");
         telemetry.addData("X Button: ", "Resets movement");
+        telemetry.addData("A Button: ", "Inverts Current Movement");
         telemetry.addData("//---------------| ", "Driver 2 Controls");
         telemetry.addData("Right Trigger: ", "Reduces Launch Speed");
         telemetry.addData("Left Trigger: ", "Intake Wheels");
@@ -128,8 +129,7 @@ public class FtcDecodeOpMode extends OpMode {
         double brMotorPower = 0.0;
         double forwardPower = (G1rightTrigger - G1leftTrigger);
         boolean Inverse = false; //Inverts movement.
-        boolean aHold = false;
-        boolean aRelease = true;
+        boolean a1Hold = false;
 
         //----------------------------------------------------------------------------------| Player 2 Variables
 
@@ -138,6 +138,8 @@ public class FtcDecodeOpMode extends OpMode {
         double intakeSpinPower = 0.0;
         boolean wheelActivate = false;
         boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
+        boolean y2Hold = false;
+        boolean a2Hold = false;
 
         //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
@@ -154,24 +156,14 @@ public class FtcDecodeOpMode extends OpMode {
         brMotor.setPower(brMotorPower);*/
 
 
-        if (G1yButton){
-            Inverse = true;
-        }
-
-        if (G1xButton){
-            Inverse = false;
-        }
-
-        /*if(G1aButton){
-            aRelease = false;
-            if(aHold){
-                Inverse = true;
-            } else {
-                Inverse = false;
+        if(G1aButton){
+            if(!a1Hold) {
+                Inverse = !Inverse;
             }
+            a1Hold = true;
         } else {
-
-        }*/ //Currently working on code
+            a1Hold = false;
+        }
 
         if (Inverse){
             frMotorPower = forwardPower + G1LeftStickX;
@@ -199,14 +191,21 @@ public class FtcDecodeOpMode extends OpMode {
         }
 
         if(G2yButton){
-            wheelActivate = true;
+            if(!y2Hold) {
+                wheelActivate = !wheelActivate;
+            }
+            y2Hold = true;
+        } else {
+            y2Hold = false;
         }
 
-        if (G2bButton){
-            Reverse = true;
-        }
-        if (G2aButton){
-            Reverse = false;
+        if(G2aButton){
+            if(!a2Hold) {
+                Reverse = !Reverse;
+            }
+            a2Hold = true;
+        } else {
+            a2Hold = false;
         }
 
         spinMotorPower = G2rightTrigger;
