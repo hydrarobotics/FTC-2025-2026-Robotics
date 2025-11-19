@@ -27,6 +27,13 @@ public class FtcDecodeOpMode extends OpMode {
 
     private RobotHardware robot = new RobotHardware(); //Initializes the RobotHardware class to get its data.
 
+    boolean Inverse = false; //Inverts movement.
+    boolean a1Hold = false;
+    boolean wheelActivate = false;
+    boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
+    boolean y2Hold = false;
+    boolean a2Hold = false;
+
     @Override
     public void init() {
         robot.init(hardwareMap);
@@ -45,17 +52,14 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("Right Trigger: ", "Forward");
         telemetry.addData("Left Trigger: ", "Backward");
         telemetry.addData("Left Stick Horizontal: ", "Turning");
-        telemetry.addData("Y Button: ", "Inverts movement");
-        telemetry.addData("X Button: ", "Resets movement");
         telemetry.addData("A Button: ", "Inverts Current Movement");
         telemetry.addData("//---------------| ", "Driver 2 Controls");
         telemetry.addData("Right Trigger: ", "Reduces Launch Speed");
         telemetry.addData("Left Trigger: ", "Intake Wheels");
         telemetry.addData("Left Stick Y: ", "Servo Wheels");
-        telemetry.addData("X Button: ", "Drops Ball Bar");
-        telemetry.addData("Y Button: ", "Activates Launcher");
-        telemetry.addData("B Button: ", "Reverses intake direction");
-        telemetry.addData("A Button: ", "Resets intake direction");
+        telemetry.addData("X Button: ", "Drops ball bar while down");
+        telemetry.addData("Y Button: ", "Activates/Deactivates launcher");
+        telemetry.addData("A Button: ", "Inverts intake direction");
         telemetry.update();
 
         //Nayana Code
@@ -128,18 +132,13 @@ public class FtcDecodeOpMode extends OpMode {
         double blMotorPower = 0.0;
         double brMotorPower = 0.0;
         double forwardPower = (G1rightTrigger - G1leftTrigger);
-        boolean Inverse = false; //Inverts movement.
-        boolean a1Hold = false;
 
         //----------------------------------------------------------------------------------| Player 2 Variables
 
         double spinMotorPower = 0.0;
         double servoSpinPower = 0.0;
         double intakeSpinPower = 0.0;
-        boolean wheelActivate = false;
-        boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
-        boolean y2Hold = false;
-        boolean a2Hold = false;
+
 
         //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
@@ -214,6 +213,8 @@ public class FtcDecodeOpMode extends OpMode {
 
         if (wheelActivate) {
             spinMotor.setPower(1.0 - spinMotorPower);
+        } else {
+            spinMotor.setPower(0.0);
         }
 
         rightSpin.setPower(-servoSpinPower);
@@ -242,6 +243,10 @@ public class FtcDecodeOpMode extends OpMode {
         telemetry.addData("|-----------------------|","");
         telemetry.addData("Movement Controls Inverse On: ", Inverse);
         telemetry.addData("Intake Wheels Reverse: ", Reverse);
+        telemetry.addData("Spin Wheel Activated: ", wheelActivate);
+        telemetry.addData("a2Hold: ", a2Hold);
+        telemetry.addData("y2Hold: ", y2Hold);
+
 
     }
 

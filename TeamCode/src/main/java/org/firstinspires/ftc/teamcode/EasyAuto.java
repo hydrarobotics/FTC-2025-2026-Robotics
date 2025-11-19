@@ -24,14 +24,14 @@ public class EasyAuto extends LinearOpMode {
 
         waitForStart();
 
-        //wait(2);
+        sleep(2000);
 
         frMotor.setPower(0.5);
         flMotor.setPower(-0.5);
         brMotor.setPower(0.5);
         blMotor.setPower(-0.5);
 
-        wait(5);
+        sleep(5000);
 
         frMotor.setPower(0.0);
         flMotor.setPower(0.0);
