@@ -20,18 +20,16 @@ public class FtcDecodeOpMode extends OpMode {
     private DcMotor blMotor;
     private DcMotor frMotor;
     private DcMotor brMotor;
-    private DcMotor spinMotor;
-    private CRServo rightSpin;
-    private Servo leftSpin;
-    private DcMotor intakeSpin;
+    //private DcMotor intakeSpin;
+    private Servo carousel;
 
     private RobotHardware robot = new RobotHardware(); //Initializes the RobotHardware class to get its data.
 
     boolean Inverse = false; //Inverts movement.
+    boolean SRSwap = false; //Swaps the strafing and rotating controls.
     boolean a1Hold = false;
-    boolean wheelActivate = false;
+    boolean b1Hold = false;
     boolean Reverse = false; //Reverses intake direction. Added for testing purposes.
-    boolean y2Hold = false;
     boolean a2Hold = false;
 
     @Override
@@ -42,23 +40,21 @@ public class FtcDecodeOpMode extends OpMode {
         frMotor = robot.FRMotor;
         blMotor = robot.BLMotor;
         brMotor = robot.BRMotor;
-        spinMotor = robot.SpinMotor;
-        rightSpin = robot.rightSpin;
-        leftSpin = robot.leftSpin;
-        intakeSpin = robot.intakeSpin;
+        //intakeSpin = robot.intakeSpin;
+        carousel = robot.carousel;
 
         telemetry.addData("Status", "Initialized");
         telemetry.addData("//---------------| ", "Driver 1 Controls");
         telemetry.addData("Right Trigger: ", "Forward");
         telemetry.addData("Left Trigger: ", "Backward");
-        telemetry.addData("Left Stick Horizontal: ", "Turning");
+        telemetry.addData("Left Stick Horizontal: ", "Strafing");
+        telemetry.addData("Right Stick Horizontal: ", "Turning");
         telemetry.addData("A Button: ", "Inverts Current Movement");
+        telemetry.addData("B button: ", "Swaps strafing and rotation");
         telemetry.addData("//---------------| ", "Driver 2 Controls");
         telemetry.addData("Right Trigger: ", "Reduces Launch Speed");
         telemetry.addData("Left Trigger: ", "Intake Wheels");
-        telemetry.addData("Left Stick Y: ", "Servo Wheels");
-        telemetry.addData("X Button: ", "Drops ball bar while down");
-        telemetry.addData("Y Button: ", "Activates/Deactivates launcher");
+        telemetry.addData("Dpad Left/Up/Right: ", "Carousel 0/120/240");
         telemetry.addData("A Button: ", "Inverts intake direction");
         telemetry.update();
 
@@ -135,10 +131,7 @@ public class FtcDecodeOpMode extends OpMode {
 
         //----------------------------------------------------------------------------------| Player 2 Variables
 
-        double spinMotorPower = 0.0;
-        double servoSpinPower = 0.0;
         double intakeSpinPower = 0.0;
-
 
         //----------------------------------------------------------------------------------| Gamepad 1 Controls
 
@@ -164,39 +157,52 @@ public class FtcDecodeOpMode extends OpMode {
             a1Hold = false;
         }
 
-        if (Inverse){
-            frMotorPower = forwardPower + G1LeftStickX;
-            flMotorPower = forwardPower - G1LeftStickX;
-            frMotor.setPower(-frMotorPower);
-            flMotor.setPower(flMotorPower);
-            brMotor.setPower(-frMotorPower);
-            blMotor.setPower(flMotorPower);
+        if(G1bButton){
+            if(!b1Hold){
+                SRSwap = !SRSwap;
+            }
+            b1Hold = true;
         } else {
-            frMotorPower = forwardPower - G1LeftStickX;
-            flMotorPower = forwardPower + G1LeftStickX;
-            frMotor.setPower(frMotorPower);
-            flMotor.setPower(-flMotorPower);
-            brMotor.setPower(frMotorPower);
-            blMotor.setPower(-flMotorPower);
+            b1Hold = false;
+        }
 
+        if (Inverse){
+            if(!SRSwap) {
+                frMotorPower = ((forwardPower - G1LeftStickX) + (G1RightStickX));
+                flMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
+                brMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
+                blMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
+            } else {
+                frMotorPower = ((forwardPower - G1RightStickX) + (G1LeftStickX));
+                flMotorPower = ((forwardPower + G1RightStickX) - (G1LeftStickX));
+                brMotorPower = ((forwardPower + G1RightStickX) + (G1LeftStickX));
+                blMotorPower = ((forwardPower - G1RightStickX) - (G1LeftStickX));
+            }
+
+            flMotor.setPower(flMotorPower);
+            frMotor.setPower(-frMotorPower);
+            blMotor.setPower(blMotorPower);
+            brMotor.setPower(-brMotorPower);
+        } else {
+            if(!SRSwap) {
+                frMotorPower = ((forwardPower - G1LeftStickX) - (G1RightStickX));
+                flMotorPower = ((forwardPower + G1LeftStickX) + (G1RightStickX));
+                brMotorPower = ((forwardPower + G1LeftStickX) - (G1RightStickX));
+                blMotorPower = ((forwardPower - G1LeftStickX) + (G1RightStickX));
+            } else {
+                frMotorPower = ((forwardPower - G1RightStickX) - (G1LeftStickX));
+                flMotorPower = ((forwardPower + G1RightStickX) + (G1LeftStickX));
+                brMotorPower = ((forwardPower + G1RightStickX) - (G1LeftStickX));
+                blMotorPower = ((forwardPower - G1RightStickX) + (G1LeftStickX));
+            }
+
+            flMotor.setPower(-flMotorPower);
+            frMotor.setPower(frMotorPower);
+            blMotor.setPower(-blMotorPower);
+            brMotor.setPower(brMotorPower);
         }
 
         //----------------------------------------------------------------------------------| Gamepad 2 Controls
-
-        if (G2xButton){
-            leftSpin.setPosition(0.25);
-        } else {
-            leftSpin.setPosition(0.0);
-        }
-
-        if(G2yButton){
-            if(!y2Hold) {
-                wheelActivate = !wheelActivate;
-            }
-            y2Hold = true;
-        } else {
-            y2Hold = false;
-        }
 
         if(G2aButton){
             if(!a2Hold) {
@@ -207,46 +213,43 @@ public class FtcDecodeOpMode extends OpMode {
             a2Hold = false;
         }
 
-        spinMotorPower = G2rightTrigger;
-        servoSpinPower = G2LeftStickY;
-        intakeSpinPower = G2leftTrigger / 2; //Too strong at max.
-
-        if (wheelActivate) {
-            spinMotor.setPower(1.0 - spinMotorPower);
-        } else {
-            spinMotor.setPower(0.0);
+        if(G2DpadRight){
+            carousel.setPosition(0.0);
+        } else if (G2DpadUp){
+            carousel.setPosition(0.5);
+        } else if (G2DpadLeft){
+            carousel.setPosition(1.0);
         }
 
-        rightSpin.setPower(-servoSpinPower);
+        intakeSpinPower = G2leftTrigger / 2; //Too strong at max.
 
         if (!Reverse) {
-            intakeSpin.setPower(intakeSpinPower);
+            //intakeSpin.setPower(intakeSpinPower);
         } else {
-            intakeSpin.setPower(-intakeSpinPower);
+            //intakeSpin.setPower(-intakeSpinPower);
         }
 
         //----------------------------------------------------------------------------------| Telemetry
 
         telemetry.addData("Front Right Wheel Power: ", frMotorPower);
         telemetry.addData("Front Left Wheel Power: ", flMotorPower);
-        telemetry.addData("Launch Wheel Power: ", spinMotorPower);
-        telemetry.addData("Launch Servo Right Power: ", servoSpinPower);
-        telemetry.addData("Launch Servo Left Power: ", -servoSpinPower);
-        telemetry.addData("Intake Servo Power: ", intakeSpinPower);
+        telemetry.addData("Back Right Wheel Power: ", brMotorPower);
+        telemetry.addData("Back Left Wheel Power: ", blMotorPower);
+        //telemetry.addData("Intake Servo Power: ", intakeSpinPower);
         telemetry.addData("|-----------------------|", "");
         telemetry.addData("Front Right Wheel Cur Power: ", frMotor.getPower());
         telemetry.addData("Front Left Wheel Cur Power: ", flMotor.getPower());
-        telemetry.addData("Launch Wheel Cur Power: ", spinMotor.getPower());
-        telemetry.addData("Launch Servo Right Cur Power: ", rightSpin.getPower());
-        telemetry.addData("Launch Servo Left Cur Pos: ", leftSpin.getPosition());
-        telemetry.addData("Intake Servo Cur Power: ", intakeSpin.getPower());
+        telemetry.addData("Back Right Wheel Cur Power: ", brMotor.getPower());
+        telemetry.addData("Back Left Wheel Cur Power: ", blMotor.getPower());
+        telemetry.addData("CS Servo Cur Position: ", carousel.getPosition());
+        //telemetry.addData("Intake Servo Cur Power: ", intakeSpin.getPower());
         telemetry.addData("|-----------------------|","");
         telemetry.addData("Movement Controls Inverse On: ", Inverse);
+        telemetry.addData("Strafing Rotation Swap: ", SRSwap);
         telemetry.addData("Intake Wheels Reverse: ", Reverse);
-        telemetry.addData("Spin Wheel Activated: ", wheelActivate);
-        telemetry.addData("a2Hold: ", a2Hold);
-        telemetry.addData("y2Hold: ", y2Hold);
-
+        telemetry.addData("Dpad Left: ", G2DpadLeft);
+        telemetry.addData("Dpad Up: ", G2DpadUp);
+        telemetry.addData("Dpad Right: ", G2DpadRight);
 
     }
 
