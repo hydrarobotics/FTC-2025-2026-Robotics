@@ -57,16 +57,13 @@ public class AutoDummy extends LinearOpMode {
     @Override
     public void runOpMode() {
 
-        robot.init(hardwareMap);
+        robot.init(hardwareMap, telemetry);
 
-        flMotor = robot.FLMotor;
-        frMotor = robot.FRMotor;
-        blMotor = robot.BLMotor;
-        brMotor = robot.BRMotor;
-        spinMotor = robot.SpinMotor;
-        rightSpin = robot.rightSpin;
-        leftSpin = robot.leftSpin;
-        intakeSpin = robot.intakeSpin;
+        flMotor = robot.FrontLefMotor;
+        frMotor = robot.FrontRightMotor;
+        blMotor = robot.BackLeftMotor;
+        brMotor = robot.BackRightMotor;
+        intakeSpin = robot.IntakeMotor;
 
         telemetry.addData("Status", "Initialized");
         telemetry.update();

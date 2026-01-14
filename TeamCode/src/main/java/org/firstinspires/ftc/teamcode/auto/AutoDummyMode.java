@@ -7,6 +7,8 @@ import com.acmerobotics.roadrunner.Vector2d;
 import com.qualcomm.robotcore.eventloop.opmode.Autonomous;
 import com.qualcomm.robotcore.eventloop.opmode.LinearOpMode;
 
+import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RobotHardware;
 import org.firstinspires.ftc.teamcode.TankDrive;
 
 @Config
@@ -17,7 +19,7 @@ public class AutoDummyMode extends LinearOpMode {
     @Override
     public void runOpMode(){
         Pose2d initialPose = new Pose2d(-34, -53, Math.toRadians(90));
-        TankDrive drive = new TankDrive(hardwareMap, initialPose);
+        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
         //Artifacts artifacts = new Artifacts(hardwareMap);
         //Vector2d shootingPositionVector = new Vector2d(-46, -34);
 
