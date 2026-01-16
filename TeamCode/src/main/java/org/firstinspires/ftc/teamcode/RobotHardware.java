@@ -112,7 +112,7 @@ public class RobotHardware {
         ShooterRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
-        limelight.pipelineSwitch(0);
+        limelight.pipelineSwitch(0); //TODO need to check and switch to the AprilTag Pipeline index.
         limelight.start();
 
     }
