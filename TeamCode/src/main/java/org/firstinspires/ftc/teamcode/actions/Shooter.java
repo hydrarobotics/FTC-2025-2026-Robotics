@@ -49,9 +49,9 @@ public class Shooter {
 
             double shooterLeftMotorPower = shooterLeftMotor.getPower();
             double shooterRightMotorPower = shooterRightMotor.getPower();
-            packet.put("shooterLeftMotorPower", shooterLeftMotorPower);
-            packet.put("shooterRightMotorPower", shooterRightMotorPower);
-            return shooterLeftMotorPower == 0.0 && shooterRightMotorPower == 0.0;
+            packet.addLine("shooterLeftMotorPower = " + shooterLeftMotorPower);
+            packet.addLine("shooterRightMotorPower = " + shooterRightMotorPower);
+            return true ;
         }
     }
 

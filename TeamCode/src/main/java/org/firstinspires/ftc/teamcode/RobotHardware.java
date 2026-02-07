@@ -88,20 +88,22 @@ public class RobotHardware {
         ShooterLeftMotor.setPower(0.0);
         ShooterRightMotor.setPower(0.0);
 
-
-
 //        FrontRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 //        BackRightMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+
         FrontLefMotor.setDirection(DcMotorSimple.Direction.REVERSE);
         BackLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
 
-//        FrontLefMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-//        BackLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-//        BackRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-//        FrontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-        ShooterLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
-        ShooterRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODERS);
+        IntakeMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ShooterLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ShooterRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        ShooterLeftMotor.setDirection(DcMotorSimple.Direction.REVERSE);
+        ShooterRightMotor
+                .setDirection(DcMotorSimple.Direction.REVERSE);
+        FrontLefMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        FrontRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackLeftMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
+        BackRightMotor.setMode(DcMotor.RunMode.RUN_WITHOUT_ENCODER);
 
         FrontLefMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         BackLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
@@ -110,6 +112,9 @@ public class RobotHardware {
         IntakeMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         ShooterLeftMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
         ShooterRightMotor.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+
+//        ShooterArmRightServo.scaleRange(0.6, 0.85);
+        ShooterRotationServo.scaleRange(0.56, 0.76);
 
         limelight = hardwareMap.get(Limelight3A.class, "limelight");
         limelight.pipelineSwitch(0); //TODO need to check and switch to the AprilTag Pipeline index.

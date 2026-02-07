@@ -14,69 +14,57 @@ public class MeepMeepREDTesting {
     public static void main(String[] args) {
         MeepMeep meepMeep = new MeepMeep(800);
 
+        Pose2d startingPosition = new Pose2d(-56, 56, Math.toRadians(138)) ;
         RoadRunnerBotEntity myBot = new DefaultBotBuilder(meepMeep)
                 // Set bot constraints: maxVel, maxAccel, maxAngVel, maxAngAccel, track width
                 .setConstraints(60, 60, Math.toRadians(180), Math.toRadians(180), 15)
+                .setStartPose(startingPosition)
                 .build();
 
-        Vector2d shootingPositionVector = new Vector2d(-46, 34);
 
-        TrajectoryActionBuilder baseToOblScan = myBot.getDrive().actionBuilder(new Pose2d(-38, 51, Math.toRadians(90)))
-                .lineToY(17)
-                .waitSeconds(3);
+        Pose2d shootingPose2d = new Pose2d(-34, 29, Math.toRadians(90));
+        Vector2d shootingPositionVector = shootingPose2d.position;
 
-        int oblSelectedPose = 22 ; // One of 21, 22, 23
+        TrajectoryActionBuilder basetoPreloadedShooting = myBot.getDrive().actionBuilder(startingPosition)
+                .strafeTo(shootingPositionVector);
 
-        TrajectoryActionBuilder oblScanToGPP = myBot.getDrive().actionBuilder(new Pose2d(-38, 17, Math.toRadians(90)))
-                .turn(Math.toRadians(-90))
+        TrajectoryActionBuilder oblScanToGPP = basetoPreloadedShooting.endTrajectory().fresh()
+                .turnTo(Math.toRadians(0))
                 .lineToX(-11)
                 .turn(Math.toRadians(90))
-                .lineToY(50);
-
-        TrajectoryActionBuilder oblScanToPGP = myBot.getDrive().actionBuilder(new Pose2d(-38, 17, Math.toRadians(90)))
-                .turn(Math.toRadians(-90))
-                .lineToX(12)
-                .turn(Math.toRadians(90))
-                .lineToY(50);
-
-        TrajectoryActionBuilder oblScanToPPG = myBot.getDrive().actionBuilder(new Pose2d(-38, 17, Math.toRadians(90)))
-                .turn(Math.toRadians(-90))
-                .lineToX(35)
-                .turn(Math.toRadians(90))
-                .lineToY(50);
-
-        Action oblSelectedAction = null ;
-        int finalXPos = 0 ;
-        switch (oblSelectedPose) {
-            case 21:
-                finalXPos = 35;
-                oblSelectedAction = oblScanToPPG.build();
-                break;
-            case 22:
-                finalXPos = 12;
-                oblSelectedAction = oblScanToPGP.build();
-                break;
-            case 23:
-                finalXPos = -11;
-                oblSelectedAction = oblScanToGPP.build();
-                break;
-        }
-
-        TrajectoryActionBuilder collectedToShoot = myBot.getDrive().actionBuilder(new Pose2d(finalXPos, 50, Math.toRadians(90)))
+                .lineToY(60)
                 .turn(Math.toRadians(90))
                 .strafeTo(shootingPositionVector)
-                .turn(Math.toRadians(-55));
+                .turnTo(Math.toRadians(138));
+
+        TrajectoryActionBuilder oblScanToPGP = basetoPreloadedShooting.endTrajectory().fresh()
+                .turnTo(Math.toRadians(0))
+                .lineToX(12)
+                .turn(Math.toRadians(90))
+                .lineToY(60)
+                .turn(Math.toRadians(90))
+                .strafeTo(shootingPositionVector)
+                .turnTo(Math.toRadians(138));
+
+        TrajectoryActionBuilder oblScanToPPG = basetoPreloadedShooting.endTrajectory().fresh()
+                .turnTo(Math.toRadians(0))
+                .lineToX(35)
+                .turn(Math.toRadians(90))
+                .lineToY(60)
+                .turn(Math.toRadians(90))
+                .strafeTo(shootingPositionVector)
+                .turnTo(Math.toRadians(138));
 
         myBot.runAction(new SequentialAction(
-                baseToOblScan.build(),
-                oblSelectedAction,
-                //CollectArtifacts
-                collectedToShoot.build()
+                basetoPreloadedShooting.build(),
+                oblScanToGPP.build(),
+                oblScanToPGP.build(),
+                oblScanToPPG.build()
         ));
 
 
         meepMeep.setBackground(MeepMeep.Background.FIELD_DECODE_OFFICIAL)
-                .setDarkMode(true)
+                .setDarkMode(false)
                 .setBackgroundAlpha(0.95f)
                 .addEntity(myBot)
                 .start();

@@ -16,10 +16,14 @@ import com.qualcomm.robotcore.hardware.HardwareMap;
 import com.qualcomm.robotcore.hardware.Servo;
 
 import org.firstinspires.ftc.teamcode.MecanumDrive;
+import org.firstinspires.ftc.teamcode.RobotHardware;
+import org.firstinspires.ftc.teamcode.actions.ActionUtilities;
+import org.firstinspires.ftc.teamcode.actions.Shooter;
 import org.firstinspires.ftc.vision.apriltag.AprilTagDetection;
 import org.firstinspires.ftc.teamcode.APrilTagWebcam;
 
 import java.util.List;
+
 
 @Config
 @Autonomous(name = "BLUE_TEST_AUTO_PIXEL", group = "Autonomous")
@@ -28,39 +32,62 @@ public class BlueSideMDriveAuto extends LinearOpMode {
 
     @Override
     public void runOpMode() {
-        Pose2d initialPose = new Pose2d(-34, -53, Math.toRadians(90));
-        MecanumDrive drive = new MecanumDrive(hardwareMap, initialPose);
+        RobotHardware robot = new RobotHardware();
+        robot.init(hardwareMap, telemetry);
 
-        Artifacts artifacts = new Artifacts(hardwareMap);
-        Vector2d shootingPositionVector = new Vector2d(-46, -34);
+        Pose2d startingPosition = new Pose2d(-56, -56, Math.toRadians(230)) ;
+        Pose2d shootingPose2d = new Pose2d(-34, -29, Math.toRadians(90));
+        Vector2d shootingPositionVector = shootingPose2d.position;
 
-        int oblSelectedPose = 21 ; // Hardcoding at beginning before detecting just to default
+        MecanumDrive drive = new MecanumDrive(hardwareMap, startingPosition);
 
-        TrajectoryActionBuilder baseToOblScan = drive.actionBuilder(initialPose)
-                .lineToY(-17)
-                .waitSeconds(3);
+        TrajectoryActionBuilder basetoPreloadedShooting =drive.actionBuilder(startingPosition)
+                .strafeTo(shootingPositionVector);
 
-        TrajectoryActionBuilder oblScanToPPG = drive.actionBuilder(new Pose2d(-38, -17, Math.toRadians(90)))
-                .turn(Math.toRadians(-90))
+        TrajectoryActionBuilder oblScanToPPG = basetoPreloadedShooting.endTrajectory().fresh()
+                .waitSeconds(3)
+                .turnTo(Math.toRadians(0))
                 .lineToX(-11)
                 .turn(Math.toRadians(-90))
-                .lineToY(-50);
-
-        TrajectoryActionBuilder oblScanToPGP = drive.actionBuilder(new Pose2d(-38, -17, Math.toRadians(90)))
+                .lineToY(-40)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 1))
+                .lineToY(-45)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 2))
+                .lineToY(-50)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 3))
                 .turn(Math.toRadians(-90))
+                .strafeTo(shootingPositionVector)
+                .turnTo(Math.toRadians(230));
+
+        TrajectoryActionBuilder oblScanToPGP = basetoPreloadedShooting.endTrajectory().fresh()
+                .waitSeconds(3)
+                .turnTo(Math.toRadians(0))
                 .lineToX(12)
                 .turn(Math.toRadians(-90))
-                .lineToY(-50);
-
-
-        TrajectoryActionBuilder oblScanToGPP = drive.actionBuilder(new Pose2d(-38, -17, Math.toRadians(90)))
+                .lineToY(-40)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 1))
+                .lineToY(-45)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 2))
+                .lineToY(-50)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 3))
                 .turn(Math.toRadians(-90))
+                .strafeTo(shootingPositionVector)
+                .turnTo(Math.toRadians(230));
+
+        TrajectoryActionBuilder oblScanToGPP = basetoPreloadedShooting.endTrajectory().fresh()
+                .waitSeconds(3)
+                .turnTo(Math.toRadians(0))
                 .lineToX(35)
                 .turn(Math.toRadians(-90))
-                .lineToY(-50);
-
-
-        Action oblSelectedAction = null ;
+                .lineToY(-40)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 1))
+                .lineToY(-45)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 2))
+                .lineToY(-50)
+                .stopAndAdd(ActionUtilities.getIntakeActions(robot, 3))
+                .turn(Math.toRadians(-90))
+                .strafeTo(shootingPositionVector)
+                .turnTo(Math.toRadians(230));
 
         while (!isStopRequested() && !opModeIsActive()) {
             telemetry.addData("Position during Init", 1);
@@ -72,72 +99,36 @@ public class BlueSideMDriveAuto extends LinearOpMode {
         waitForStart();
 
         APrilTagWebcam aPrilTagWebcam = new APrilTagWebcam(hardwareMap, telemetry);
-        List<AprilTagDetection> detectedTags = aPrilTagWebcam.getDetectedTags() ;
+        List<AprilTagDetection> detectedTags = aPrilTagWebcam.getDetectedTags();
         for (AprilTagDetection detectedTag : detectedTags) {
-            if (detectedTag.id == 21 || detectedTag.id == 22 || detectedTag.id == 23){
-                oblSelectedPose = detectedTag.id ;
+            if (detectedTag.id == 21 || detectedTag.id == 22 || detectedTag.id == 23) {
+                int oblSelectedPose = detectedTag.id;
                 telemetry.addData("Position during Init", oblSelectedPose);
                 telemetry.update();
             }
         }
 
         if (isStopRequested()) return;
-
+        Shooter shooter = new Shooter(robot);
         Actions.runBlocking(
                 new SequentialAction(
-                        baseToOblScan.build()
-                        //Add April Tag Scanning
+                        basetoPreloadedShooting.build(),
+                        ActionUtilities.getShootingActions(robot, 1, shooter),
+                        ActionUtilities.getShootingActions(robot, 2, shooter),
+                        ActionUtilities.getShootingActions(robot, 3, shooter),
+                        oblScanToPPG.build(),
+                        ActionUtilities.getShootingActions(robot, 1, shooter),
+                        ActionUtilities.getShootingActions(robot, 2, shooter),
+                        ActionUtilities.getShootingActions(robot, 3, shooter),
+                        oblScanToPGP.build(),
+                        ActionUtilities.getShootingActions(robot, 1, shooter),
+                        ActionUtilities.getShootingActions(robot, 2, shooter),
+                        ActionUtilities.getShootingActions(robot, 3, shooter),
+                        oblScanToGPP.build(),
+                        ActionUtilities.getShootingActions(robot, 1, shooter),
+                        ActionUtilities.getShootingActions(robot, 2, shooter),
+                        ActionUtilities.getShootingActions(robot, 3, shooter)
                 )
         );
-
-
-        int finalXPos = 0 ;
-        switch (oblSelectedPose) {
-            case 21:
-                finalXPos = 35;
-                oblSelectedAction = oblScanToGPP.build();
-                break;
-            case 22:
-                finalXPos = 12;
-                oblSelectedAction = oblScanToPGP.build();
-                break;
-            case 23:
-                finalXPos = -11;
-                oblSelectedAction = oblScanToPPG.build();
-                break;
-        }
-
-        TrajectoryActionBuilder collectedToShoot =  drive.actionBuilder(new Pose2d(finalXPos, -50, Math.toRadians(-90)))
-                .turn(Math.toRadians(-90))
-                .strafeTo(shootingPositionVector)
-                .turn(Math.toRadians(55));
-
-        Actions.runBlocking(
-                new SequentialAction(
-                    oblSelectedAction,
-                    artifacts.collectArtifacts(),
-                    collectedToShoot.build()
-                )
-        );
-
-    }
-
-    public class Artifacts {
-        private Servo spin;
-
-        public Artifacts(HardwareMap hardwareMap) {
-            spin = hardwareMap.get(Servo.class, "claw");
-        }
-
-        public class CollectArtifacts implements Action {
-            @Override
-            public boolean run(@NonNull TelemetryPacket packet) {
-                spin.setPosition(0.55);
-                return false;
-            }
-        }
-        public Action collectArtifacts(){
-            return new CollectArtifacts();
-        }
     }
 }

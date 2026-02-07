@@ -2,9 +2,7 @@ package org.firstinspires.ftc.teamcode;
 
 import com.acmerobotics.dashboard.FtcDashboard;
 import com.acmerobotics.dashboard.telemetry.TelemetryPacket;
-import com.acmerobotics.roadrunner.InstantAction;
-import com.acmerobotics.roadrunner.SequentialAction;
-import com.acmerobotics.roadrunner.SleepAction;
+import com.acmerobotics.roadrunner.Action;
 import com.qualcomm.hardware.limelightvision.LLResult;
 import com.qualcomm.hardware.limelightvision.Limelight3A;
 import com.qualcomm.robotcore.eventloop.opmode.OpMode;
@@ -18,9 +16,8 @@ import com.qualcomm.robotcore.util.ElapsedTime;
 import org.firstinspires.ftc.robotcore.external.JavaUtil;
 import org.firstinspires.ftc.robotcore.external.navigation.Pose3D;
 import org.firstinspires.ftc.robotcore.external.navigation.YawPitchRollAngles;
+import org.firstinspires.ftc.teamcode.actions.ActionUtilities;
 import org.firstinspires.ftc.teamcode.actions.Shooter;
-
-import com.acmerobotics.roadrunner.Action;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -40,6 +37,8 @@ public class FtcDecodeOpMode extends OpMode {
     private Servo ShooterArmLeftServo;
     private Servo ShooterArmRightServo;
 
+    private Servo ShooterRotator;
+
     private Servo carousalServo;
 
     private Servo backPlateServo;
@@ -49,21 +48,26 @@ public class FtcDecodeOpMode extends OpMode {
     private boolean Manual = true; // Player can switch between manual controls and preset actions.
     private boolean Inverse = false;
     private boolean Together = false;
-    private boolean Reverse = false;
 
-    private boolean RunShooter = false ;
-    private DcMotor leftShooterMotor ;
+    // we are not using reverse as we are setting the direction of intake in code itself.
+//    private boolean Reverse = false;
+
+    private boolean RunShooter = false;
+    private DcMotor leftShooterMotor;
     private DcMotor rightShooterMotor;
 
-    private IMU imu ;
+    private IMU imu;
     private Limelight3A limelight;
     private RobotHardware robot = new RobotHardware(); // Class with all of the robot's hardware.
-    private NormalizedRGBA frontLeftColorSensor ;
-    private NormalizedRGBA frontRightColorSensor ;
+    private NormalizedRGBA frontLeftColorSensor;
+    private NormalizedRGBA frontRightColorSensor;
     private NormalizedRGBA backColorSensor;
 
     private FtcDashboard dash = FtcDashboard.getInstance();
     private List<Action> runningActions = new ArrayList<>();
+
+    int carousalCounter = 0; //move this to init
+    int carousalPickCounter = 0;
 
     @Override
     public void init() {
@@ -75,22 +79,31 @@ public class FtcDecodeOpMode extends OpMode {
         backRightMotor = robot.BackRightMotor;
         intakeMotor = robot.IntakeMotor;
 
-        leftShooterMotor = robot.ShooterLeftMotor ;
-        rightShooterMotor = robot.ShooterRightMotor ;
+        frontLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        frontRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backLeftMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
+        backRightMotor.setMode(DcMotor.RunMode.RUN_USING_ENCODER);
 
-        ShooterArmLeftServo = robot.ShooterArmLeftServo ;
-        ShooterArmRightServo = robot.ShooterArmRightServo ;
-        ShooterArmLeftServo.setPosition(0.35);
+        leftShooterMotor = robot.ShooterLeftMotor;
+        rightShooterMotor = robot.ShooterRightMotor;
 
-        carousalServo = robot.CarousalServo ;
+        ShooterArmLeftServo = robot.ShooterArmLeftServo;
+        ShooterArmRightServo = robot.ShooterArmRightServo;
+        ShooterRotator = robot.ShooterRotationServo;
 
-        backPlateServo = robot.BackKickerServo ;
-        frontPlateServo = robot.ShooterLiftServo ;
+        ShooterRotator.setPosition(0.62);
+        ShooterArmRightServo.setPosition(0.95);
+
+        carousalServo = robot.CarousalServo;
+        carousalServo.scaleRange(0.0, 1.0);
+
+        backPlateServo = robot.BackKickerServo;
+        backPlateServo.setPosition(1.0);
+        frontPlateServo = robot.ShooterLiftServo;
         frontPlateServo.setPosition(0.77);
+        imu = robot.imu;
 
-        imu = robot.imu ;
-
-        limelight = robot.limelight ;
+        limelight = robot.limelight;
         dash.startCameraStream(limelight, 0);
         telemetry.setMsTransmissionInterval(11);
 
@@ -158,63 +171,69 @@ public class FtcDecodeOpMode extends OpMode {
 
         // Player 2 Variables
         double intakeSpinPower = 0.0;
+        //  for the button after setting all three balls from intake, need to resst to 0.53
 
-        if (G1yButton){
+        if (G1yButton) {
             Inverse = !Inverse;
+            //frontPlateServo.setPosition(1.0);
         }
 
+        long setTime = System.nanoTime();
+        boolean hasRun = false;
         // Gamepad 2
-        if (G2yButton){
+        if (G2yButton) {
             Together = !Together;
         }
 
-        if (G2aButton){
-            RunShooter = !RunShooter ;
-        }
-
-        if (G2bButton){
-            Reverse = !Reverse;
+        if (G2aButton) {
+            RunShooter = !RunShooter;
         }
 
         if (G1aButton) {
-            ShooterArmLeftServo.setPosition(0.38);
+            //carousalServo.setPosition(0.53);
         }
 
-        if (G1bButton){
-            telemetry.addData("G1bButton", "NOT IMPLEMENETED!!!!");
-        }
-
-        if (G1xButton) {
-            ShooterArmLeftServo.setPosition(0.46);
-        }
-
-        double i = 0;
-        if (G1yButton) {
-            // RED color in color sensor indicates an empty space
-            String frontLeftColor = convertHueColortoCommonColor(frontLeftColorSensor) ;
-            String frontRightColor = convertHueColortoCommonColor(frontRightColorSensor) ;
-            String backColor = convertHueColortoCommonColor(backColorSensor) ;
-            double carousalPositionToIntakeBall ;
-            if (frontLeftColor.equalsIgnoreCase("RED")){
-                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring to take the ball into the front left space
-            } else if (frontRightColor.equalsIgnoreCase("RED")){
-                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring  to take the ball into the front right space
-            } else if (backColor.equalsIgnoreCase("RED")){
-                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring to take the ball into the back space
+        if (G2bButton) { //Switch Intake Trigger to Gamepad 2 so driver can focus on driving.
+            if (carousalCounter == 3) { // already took three balls now resetting
+                carousalCounter = 1;
             } else {
-                carousalPositionToIntakeBall = 0.0 ;
-                telemetry.addData("Carousal", "NO EMPTY SPACE");
+                carousalCounter = carousalCounter + 1;
             }
-            carousalServo.setPosition(carousalPositionToIntakeBall);
-            backPlateServo.setPosition(1.0); //DOWN on Carousal
-            intakeSpinPower = -1.0; //setting the intake motor to full power, adjust as needed
+
+            runningActions.add(
+                ActionUtilities.getIntakeActions(robot, carousalCounter)
+            );
         }
 
-        if (!Reverse) {
-            intakeMotor.setPower(intakeSpinPower);
-        } else {
-            intakeMotor.setPower(-intakeSpinPower);
-        }
+
+//        if (G1xButton) {
+//            //ShooterArmRightServo.setPosition(0.9); shooting pos
+//            //ShooterArmRightServo.setPosition(0.76);//pick up ball pos
+//            ShooterArmRightServo.setPosition(0.8);
+//         }
+// bruh this doesnt work cause color sensors arent on intake positions
+//        double i = 0;
+//        if (G1yButton) {
+//            // RED color in color sensor indicates an empty space
+//            String frontLeftColor = convertHueColortoCommonColor(frontLeftColorSensor) ;
+//            String frontRightColor = convertHueColortoCommonColor(frontRightColorSensor) ;
+//            String backColor = convertHueColortoCommonColor(backColorSensor) ;
+//            double carousalPositionToIntakeBall ;
+//            if (frontLeftColor.equalsIgnoreCase("RED")){
+//                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring to take the ball into the front left space
+//            } else if (frontRightColor.equalsIgnoreCase("RED")){
+//                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring  to take the ball into the front right space
+//            } else if (backColor.equalsIgnoreCase("RED")){
+//                carousalPositionToIntakeBall = 0.45 ;//TODO update after measuring to take the ball into the back space
+//            } else {
+//                carousalPositionToIntakeBall = 0.0 ;
+//                telemetry.addData("Carousal", "NO EMPTY SPACE");
+//            }
+//            carousalServo.setPosition(carousalPositionToIntakeBall);
+//            backPlateServo.setPosition(1.0); //DOWN on Carousal
+//            intakeSpinPower = -1.0; //setting the intake motor to full power, adjust as needed
+//        }
+
 
         //Setting the limelight direction to the direction of the robot.
         YawPitchRollAngles orientation = imu.getRobotYawPitchRollAngles();
@@ -255,75 +274,51 @@ public class FtcDecodeOpMode extends OpMode {
         frontRightMotor.setPower(frontRightPower);
         backRightMotor.setPower(backRightPower);
 
+//        ShooterArmRightServo.setDirection(Servo.Direction.REVERSE);
+//        ShooterArmLeftServo.setDirection(Servo.Direction.FORWARD);
 
-        ShooterArmRightServo.setDirection(Servo.Direction.REVERSE);
-        ShooterArmLeftServo.setDirection(Servo.Direction.FORWARD);
-
-        if (RunShooter){ //this is what i need to do
+        if (RunShooter) { //this is what i need to do
             Shooter shooter = new Shooter(robot); //using an instance for both spinup and spindown
             // RED color in color sensor indicates an empty space
-            String frontLeftColor = convertHueColortoCommonColor(frontLeftColorSensor) ;
-            String frontRightColor = convertHueColortoCommonColor(frontRightColorSensor) ;
-            String backColor = convertHueColortoCommonColor(backColorSensor) ;
+            String frontLeftColor = convertHueColortoCommonColor(frontLeftColorSensor);
+            String frontRightColor = convertHueColortoCommonColor(frontRightColorSensor);
+            String backColor = convertHueColortoCommonColor(backColorSensor);
+            //carousalServo.setPosition(0.115);
 
-            double carousalServoPosToPickBall;
-            if (frontLeftColor.equalsIgnoreCase("RED")){
-                carousalServoPosToPickBall = 0.53 ; // TODO defaulting to one position but measure and update
-            } else if (frontRightColor.equalsIgnoreCase("RED")){
-                carousalServoPosToPickBall = 0.53 ; // TODO defaulting to one position but measure and update
-            } else if (backColor.equalsIgnoreCase("RED")){
-                carousalServoPosToPickBall = 0.53 ; // TODO defaulting to one position but measure and update
-            } else {
-                carousalServoPosToPickBall = 0.53;
-            }
+            carousalPickCounter++;
 
-            runningActions.add(new SequentialAction(
-                    new InstantAction(() -> carousalServo.setPosition(carousalServoPosToPickBall)),
-                    new InstantAction(() -> frontPlateServo.setPosition(1.0)), //DOWN
-                    new InstantAction(() -> ShooterArmLeftServo.setPosition(0.385)),// have to find out position, think it's 0.395 or 0.39
-                    // should do ShooterArmRightServo both as two servos are turning the arm together.
-                    new SleepAction(1), //Wait for arm to position
-                    new InstantAction(() -> backPlateServo.setPosition(0.3)), // might have to reprogram
-                    new InstantAction(() -> frontPlateServo.setPosition(0.5)), //MID Point to allow holding the ball
-
-                    // should do ShooterArmRightServo both as two servos are turning the arm together.
-                    //new InstantAction(() -> ), // tbis would be to locate target with limelight and if the limelight desn't sense the april tag, turn with wheels until it does
-                    new InstantAction(() -> ShooterArmLeftServo.setPosition(0.40)),
-                    shooter.spinUp(),
-                    new SleepAction(3), //Allowing for shooter motor to spin up to full speed
-                    new InstantAction(() -> frontPlateServo.setPosition(0.0)), // finished shooting one
-                    new SleepAction(10),
-
-                    // Resetting after shooting
-                    new InstantAction(() -> frontPlateServo.setPosition(1.0)), //DOWN
-                    new InstantAction(() -> backPlateServo.setPosition(1.0)), //DOWN on Carousal
-                    new InstantAction(() -> ShooterArmLeftServo.setPosition(0.385)),
-                    shooter.spinDown()
-            ));
+            runningActions.add(ActionUtilities.getShootingActions(robot, carousalPickCounter, shooter));
         }
-        updateActionsToDash() ;
+
+        updateActionsToDash();
 
         // Telemetry
         telemetry.addData("|----------------------------------------------|", "");
+        telemetry.addLine("Gamepad 2 B: intake ");
+        telemetry.addLine("Gamepad 2 A: Outtake");
+        telemetry.addData("|----------------------------------------------|", "");
         telemetry.addData("Front Right Wheel Cur Power: ", frontRightMotor.getPower());
         telemetry.addData("Front Left Wheel Cur Power: ", frontLeftMotor.getPower());
-        telemetry.addData("Intake Servo Cur Power: ", intakeMotor.getPower());
-        telemetry.addData("|----------------------------------------------|","");
+        telemetry.addData("Intake Motor Cur Power: ", intakeMotor.getPower());
+        telemetry.addData("|----------------------------------------------|", "");
         telemetry.addData("Shooter Arm Left Servo Pos:", ShooterArmLeftServo.getPosition());
         telemetry.addData("Shooter Arm Right Servo Pos:", ShooterArmRightServo.getPosition());
-        telemetry.addData("|----------------------------------------------|","");
+        telemetry.addData("|----------------------------------------------|", "");
         telemetry.addData("Movement Controls Inverse On: ", Inverse);
         telemetry.addData("Launch Wheels Together: ", Together);
-        telemetry.addData("Intake Wheels Reverse: ", Reverse);
-        telemetry.addData("|----------------------------------------------|","");
-        telemetry.addData("Color Sensors: Front Left=", convertHueColortoCommonColor(frontLeftColorSensor)
-                + "~ Front Right=" + convertHueColortoCommonColor(frontRightColorSensor)
-                + "~ Back =" + convertHueColortoCommonColor(backColorSensor));
-        telemetry.addData("|----------------------------------------------|","");
+        telemetry.addData("|----------------------------------------------|", "");
+        telemetry.addData("Color Sensors: Front Left=",
+                convertHueColortoCommonColor(frontLeftColorSensor)
+                        + "~ Front Right=" +
+                        convertHueColortoCommonColor(frontRightColorSensor)
+                        + "~ Back =" +
+                        convertHueColortoCommonColor(backColorSensor));
+        telemetry.addData("|----------------------------------------------|", "");
+        telemetry.addData("Carousal Position @" + carousalCounter + ": ", carousalServo.getPosition());
         telemetry.update();
     }
 
-    private void updateActionsToDash(){
+    private void updateActionsToDash() {
         TelemetryPacket packet = new TelemetryPacket();
 
         // update running actions
@@ -335,31 +330,30 @@ public class FtcDecodeOpMode extends OpMode {
             }
         }
         this.runningActions = newActions;
-
         dash.sendTelemetryPacket(packet);
     }
 
     /*
-    * Method to take Normalized Color Sensor RGBA and provide color name*/
-    private String convertHueColortoCommonColor(NormalizedRGBA rgba){
+     * Method to take Normalized Color Sensor RGBA and provide color name*/
+    private String convertHueColortoCommonColor(NormalizedRGBA rgba) {
         String detectedColor = "";
         float hue = JavaUtil.colorToHue(rgba.toColor());
-        if(hue < 30){
+        if (hue < 30) {
             detectedColor = "RED";
-        } else if( hue < 60){
+        } else if (hue < 60) {
             detectedColor = "ORANGE";
-        } else if(hue < 90){
+        } else if (hue < 90) {
             detectedColor = "YELLOW";
-        } else if(hue < 150){
+        } else if (hue < 150) {
             detectedColor = "GREEN";
-        } else if(hue < 225){
+        } else if (hue < 225) {
             detectedColor = "BLUE";
         } else if (hue < 350) {
             detectedColor = "PURPLE";
         } else {
             detectedColor = "RED";
         }
-        return detectedColor ;
+        return detectedColor;
     }
 }
 
